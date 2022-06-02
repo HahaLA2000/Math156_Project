@@ -1,0 +1,99 @@
+---
+title: "Math156-Project"
+author: "Andrew Choi"
+date: "5/25/2022"
+output: pdf_document
+---
+
+## Load data
+
+```{r}
+rm(list = ls())
+library(readr)
+train <- suppressMessages(suppressWarnings(read_csv("/Users/marcandrewchoi/Desktop/UCLA/Spring 2022/Math 156/Final Proj/Math156_Project-main/archive/train.csv"))) #training data
+trainData <- train[,-c(1,2)] #rid of index and id
+test <- suppressMessages(suppressWarnings(read_csv("/Users/marcandrewchoi/Desktop/UCLA/Spring 2022/Math 156/Final Proj/Math156_Project-main/archive/test.csv"))) #testing data
+testData <- test[,-c(1,2)]
+
+
+#deal with categorical variables
+trainData$Gender <- factor(trainData$Gender)
+trainData$`Customer Type` <- factor(trainData$`Customer Type`)
+trainData$`Type of Travel` <- factor(trainData$`Type of Travel`)
+trainData$Class <- factor(trainData$Class)
+trainData$`Inflight wifi service` <- factor(trainData$`Inflight wifi service`)
+trainData$`Departure/Arrival time convenient` <- factor(trainData$`Departure/Arrival time convenient`)
+trainData$`Ease of Online booking` <- factor(trainData$`Ease of Online booking`)
+trainData$`Gate location` <- factor(trainData$`Gate location`)
+trainData$`Food and drink` <- factor(trainData$`Food and drink`)
+trainData$`Online boarding` <- factor(trainData$`Online boarding`)
+trainData$`Seat comfort` <- factor(trainData$`Seat comfort`)
+trainData$`Inflight entertainment` <- factor(trainData$`Inflight entertainment`)
+trainData$`On-board service` <- factor(trainData$`On-board service`)
+trainData$`Leg room service` <- factor(trainData$`Leg room service`)
+trainData$`Baggage handling` <- factor(trainData$`Baggage handling`)
+trainData$`Checkin service` <- factor(trainData$`Checkin service`)
+trainData$`Inflight service` <- factor(trainData$`Inflight service`)
+trainData$Cleanliness <- factor(trainData$Cleanliness)
+
+
+testData$Gender <- factor(testData$Gender)
+testData$`Customer Type` <- factor(testData$`Customer Type`)
+testData$`Type of Travel` <- factor(testData$`Type of Travel`)
+testData$Class <- factor(testData$Class)
+testData$`Inflight wifi service` <- factor(testData$`Inflight wifi service`)
+testData$`Departure/Arrival time convenient` <- factor(testData$`Departure/Arrival time convenient`)
+testData$`Ease of Online booking` <- factor(testData$`Ease of Online booking`)
+testData$`Gate location` <- factor(testData$`Gate location`)
+testData$`Food and drink` <- factor(testData$`Food and drink`)
+testData$`Online boarding` <- factor(testData$`Online boarding`)
+testData$`Seat comfort` <- factor(testData$`Seat comfort`)
+testData$`Inflight entertainment` <- factor(testData$`Inflight entertainment`)
+testData$`On-board service` <- factor(testData$`On-board service`)
+testData$`Leg room service` <- factor(testData$`Leg room service`)
+testData$`Baggage handling` <- factor(testData$`Baggage handling`)
+testData$`Checkin service` <- factor(testData$`Checkin service`)
+testData$`Inflight service` <- factor(testData$`Inflight service`)
+testData$Cleanliness <- factor(testData$Cleanliness)
+
+trainData <- na.omit(trainData)
+trainData$'satisfaction' <- as.factor(trainData$satisfaction)
+testData <- na.omit(testData)
+testData$'satisfaction' <- as.factor(testData$satisfaction)
+
+trainData <- trainData[1:23]
+
+names(trainData) <- gsub(" ", "_", names(trainData))
+names(trainData) <- gsub("/", "_", names(trainData))
+names(trainData) <- gsub("-", "_", names(trainData))
+
+names(testData) <- gsub(" ", "_", names(testData))
+names(testData) <- gsub("/", "_", names(testData))
+names(testData) <- gsub("-", "_", names(testData))
+
+trainingData <- trainData[1:10000,]
+testingData <- testData[1:10000,]
+
+
+library(randomForest)
+set.seed(222)
+rf <- randomForest(satisfaction ~ ., 
+                   data=trainingData, 
+                   ntree = 300,
+                   mtry = 8,
+                   importance = TRUE,
+                   proximity = TRUE)
+print(rf)
+
+testingData <- rbind(trainingData[1, ] , testingData)
+testingData <- testingData[-1,]
+    
+library(caret)
+p1 <- predict(rf, trainingData)
+confusionMatrix(p1, trainingData$satisfaction)
+
+p2 <- predict(rf, testingData)
+confusionMatrix(p2, testingData$satisfaction)
+plot(rf)
+```
+
